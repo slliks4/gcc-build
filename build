@@ -1,29 +1,41 @@
 #!/usr/bin/env sh
+
 OUTPUT_DIR="./output"
 
-if [ -z "$1" ]; then
-    echo "Usage: $0 <filename.c> [run]"
+if [ -z "${1:-}" ]; then
+    echo "Usage: $0 <filename.c> [run] [compiler options...]"
+    echo "Example: $0 main.c run -lraylib -lm -lpthread -ldl -lrt -lX11"
     exit 1
+fi
+
+source_file="$1"
+shift
+
+should_run=false
+
+if [ "${1:-}" = "run" ]; then
+    should_run=true
+    shift
 fi
 
 mkdir -p "$OUTPUT_DIR"
 
-echo "Building $1 ..."
+base_name=$(basename "$source_file" .c)
+output_file="$OUTPUT_DIR/$base_name"
 
-base_name=$(basename "$1" .c)
-
+echo "Building $source_file..."
 echo "Build name: $base_name"
 
-gcc -Wall -Wextra "$1" -o "$OUTPUT_DIR/$base_name"
-
-if [ $? -ne 0 ]; then
+# "$@" contains all remaining compiler/linker arguments.
+if ! gcc -Wall -Wextra "$source_file" -o "$output_file" "$@"; then
     echo "Compilation failed!"
     exit 1
 fi
 
-if [ "$2" = "run" ]; then
-    echo "Running ..."
-    echo " "
-    echo "-- Prog Output --"
-    "$OUTPUT_DIR/$base_name"
+echo "Build successful: $output_file"
+
+if [ "$should_run" = true ]; then
+    echo
+    echo "-- Program Output --"
+    "$output_file"
 fi

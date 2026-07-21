@@ -1,0 +1,29 @@
+#!/usr/bin/env sh
+OUTPUT_DIR="./output"
+
+if [ -z "$1" ]; then
+    echo "Usage: $0 <filename.c> [run]"
+    exit 1
+fi
+
+mkdir -p "$OUTPUT_DIR"
+
+echo "Building $1 ..."
+
+base_name=$(basename "$1" .c)
+
+echo "Build name: $base_name"
+
+gcc -Wall -Wextra "$1" -o "$OUTPUT_DIR/$base_name"
+
+if [ $? -ne 0 ]; then
+    echo "Compilation failed!"
+    exit 1
+fi
+
+if [ "$2" = "run" ]; then
+    echo "Running ..."
+    echo " "
+    echo "-- Prog Output --"
+    "$OUTPUT_DIR/$base_name"
+fi
